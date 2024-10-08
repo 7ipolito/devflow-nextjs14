@@ -1,7 +1,12 @@
-import React from "react";
+import { UserButton } from "@clerk/nextjs";
+import { useTheme } from "@/context/ThemeProvider";
+export default function Home() {
+  const { mode } = useTheme();
 
-const Home = () => {
-  return <div>Home</div>;
-};
-
-export default Home;
+  return (
+    <div>
+      {mode}
+      <UserButton />
+    </div>
+  );
+}
