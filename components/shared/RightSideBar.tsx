@@ -4,30 +4,30 @@ import Image from "next/image";
 import RenderTag from "./RenderTag";
 const RightSideBar = () => {
   const hotQuestions = [
-    { _id: 1, title: "How do I use express as a custim server in NextJS?" },
-    { _id: 2, title: "How do I use express as a custim server in NextJS?" },
-    { _id: 3, title: "How do I use express as a custim server in NextJS?" },
-    { _id: 4, title: "How do I use express as a custim server in NextJS?" },
+    { _id: "1", title: "How do I use express as a custim server in NextJS?" },
+    { _id: "2", title: "How do I use express as a custim server in NextJS?" },
+    { _id: "3", title: "How do I use express as a custim server in NextJS?" },
+    { _id: "4", title: "How do I use express as a custim server in NextJS?" },
   ];
 
   const popularTags = [
     {
-      _id: 1,
+      _id: "1",
       name: "Javscript",
       totalQuestions: 5,
     },
     {
-      _id: 2,
+      _id: "2",
       name: "Rust",
       totalQuestions: 5,
     },
     {
-      _id: 4,
+      _id: "3",
       name: "How do I use express as a custim server in NextJS?",
       totalQuestions: 5,
     },
     {
-      _id: 1,
+      _id: "4",
       name: "How do I use express as a custim server in NextJS?",
       totalQuestions: 5,
     },
