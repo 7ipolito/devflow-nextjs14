@@ -10,44 +10,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import NoResult from "@/components/shared/NoResult";
 import QuestionCard from "@/components/cards/QuestionCard";
-const questions = [
-  {
-    _id: "1",
-    title:
-      "GitHub repository tips and tricks for beginners and senior developers",
-    tags: [
-      { _id: "1", name: "github" },
-      { _id: "2", name: "git" },
-    ],
-    author: {
-      _id: "1",
-      name: "John Doe",
-      picture: "/assets/icons/avatar.svg",
-    },
-    upvotes: 10,
-    answers: [],
-    views: 100,
-    createdAt: new Date("2021-09-01T12:00:00.000Z"),
-  },
-  {
-    _id: "2",
-    title: "How to center a div?",
-    tags: [
-      { _id: "1", name: "html" },
-      { _id: "2", name: "css" },
-      { _id: "3", name: "flexbox" },
-    ],
-    author: {
-      _id: "2",
-      name: "Jane Smith",
-      picture: "/assets/icons/avatar.svg",
-    },
-    upvotes: 5,
-    answers: [],
-    views: 50,
-    createdAt: new Date("2021-09-02T14:30:00.000Z"),
-  },
-];
+import { getQuestion } from "@/lib/actions/question.action";
 
 export const metadata: Metadata = {
   title: "Home | Dev Overflow",
@@ -55,6 +18,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Home({ searchParams }: SearchParamsProps) {
+  const results = await getQuestion({});
+
+  console.log(results.questions);
+
   return (
     <>
       <div className="flex w-full flex-col-reverse justify-between gap-4 sm:flex-row sm:items-center">
@@ -85,8 +52,8 @@ export default async function Home({ searchParams }: SearchParamsProps) {
 
       <HomeFilters />
       <div className="2-full mt-10 flex flex-col gap-6">
-        {questions.length > 0 ? (
-          questions.map((question) => (
+        {results.questions.length > 0 ? (
+          results.questions.map((question) => (
             <QuestionCard
               key={question._id}
               _id={question._id}
