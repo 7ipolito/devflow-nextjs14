@@ -21,7 +21,7 @@ import { QuestionsSchema } from "@/lib/validations";
 import { useTheme } from "@/context/ThemeProvider";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-
+import { createQuestion } from "@/lib/actions/question.action";
 interface Props {
   type?: string;
   mongoUserId: string;
@@ -41,24 +41,39 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
   // For editor dark and light mode
   const { mode } = useTheme();
 
-  // In edit mode data will be shown by default
-  const parsedQuestionDetails =
-    questionDetails && JSON.parse(questionDetails || "");
-  const groupedTags = parsedQuestionDetails?.tags.map((tag: any) => tag.name);
+  // // In edit mode data will be shown by default
+  // const parsedQuestionDetails =
+  //   questionDetails && JSON.parse(questionDetails || "");
+  // const groupedTags = parsedQuestionDetails?.tags.map((tag: any) => tag.name);
 
   // Define form.
   const form = useForm<z.infer<typeof QuestionsSchema>>({
     resolver: zodResolver(QuestionsSchema),
     defaultValues: {
-      title: parsedQuestionDetails?.title || "",
-      explanation: parsedQuestionDetails?.content || "",
-      tags: groupedTags || [],
+      title: "",
+      explanation: "",
+      tags: [],
     },
   });
 
   // Submit form handler
   async function onSubmit(values: z.infer<typeof QuestionsSchema>) {
     setIsSubmitting(true);
+
+    try {
+      await createQuestion({
+        title: values.title,
+        content: values.explanation,
+        tags: values.tags,
+        author: JSON.parse(mongoUserId),
+      });
+
+      router.push("/");
+    } catch (error) {
+      setIsSubmitting(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   /**
@@ -161,7 +176,7 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
                   }}
                   onBlur={field.onBlur}
                   onEditorChange={(content) => field.onChange(content)}
-                  initialValue={parsedQuestionDetails?.content || ""}
+                  initialValue={""}
                   init={{
                     height: 350,
                     menubar: false,
