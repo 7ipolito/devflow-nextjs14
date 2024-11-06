@@ -1,10 +1,8 @@
 import UserCard from "@/components/cards/UserCard";
 import Filter from "@/components/shared/Filter";
 import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
-import { Button } from "@/components/ui/button";
-import { HomePageFilters, UserFilters } from "@/constants/filters";
+import { UserFilters } from "@/constants/filters";
 import { getAllUsers } from "@/lib/actions/user.action";
-import { Link } from "lucide-react";
 import React from "react";
 
 const Page = async () => {
