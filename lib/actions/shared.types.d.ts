@@ -24,6 +24,7 @@ export interface AnswerVoteParams {
 }
 
 export interface GetQuestionsParams {
+  questionId?: string;
   page?: number;
   pageSize?: number;
   searchQuery?: string;
