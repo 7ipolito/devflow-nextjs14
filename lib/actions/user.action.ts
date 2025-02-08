@@ -5,6 +5,8 @@ import { connectToDatabase } from "../mongoose";
 import Question from "@/database/question.model";
 import {
   CreateUserParams,
+  DeleteAnswerParams,
+  DeleteQuestionParams,
   DeleteUserParams,
   GetAllUsersParams,
   GetSavedQuestionsParams,
@@ -19,6 +21,7 @@ import Tag from "@/database/tag.model";
 import Answer from "@/database/answer.model";
 import { assignBadges } from "../utils";
 import { BADGE_CRITERIA } from "@/constants";
+import Interaction from "@/database/interaction.model";
 
 export async function getUserByID(params: any) {
   try {
@@ -334,4 +337,48 @@ export async function getUserAnswers(params: GetUserStatsParams) {
     console.error(`❌ ${error} ❌`);
     throw error;
   }
+}
+
+export async function deleteQuestion(params: DeleteQuestionParams) {
+  try {
+    const { questionId, path } = params;
+    await Question.deleteOne({ _id: questionId });
+
+    await Answer.deleteMany({ question: questionId });
+
+    await Interaction.deleteMany({ question: questionId });
+
+    await Tag.updateMany(
+      { questions: questionId },
+      { $pull: { questions: questionId } }
+    );
+
+    revalidatePath(path);
+  } catch (error) {}
+}
+
+export async function deleteAnswer(params: DeleteAnswerParams) {
+  try {
+    const { answerId, path } = params;
+    const answer = await Answer.findById(answerId);
+
+    if (!answer) {
+      throw new Error("Answer Not found");
+    }
+
+    await answer.deleteOne({ _id: answerId });
+
+    await Question.updateMany(
+      { _id: answer.question },
+      {
+        $pull: {
+          answers: answerId,
+        },
+      }
+    );
+
+    await Interaction.deleteMany({ answer: answerId });
+
+    revalidatePath(path);
+  } catch (error) {}
 }
