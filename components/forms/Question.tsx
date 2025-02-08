@@ -20,8 +20,9 @@ import { Badge } from "@/components/ui/badge";
 import { QuestionsSchema } from "@/lib/validations";
 import { useTheme } from "@/context/ThemeProvider";
 import Image from "next/image";
+import { createQuestion, editQuestion } from "@/lib/actions/question.action";
 import { useRouter, usePathname } from "next/navigation";
-import { createQuestion } from "@/lib/actions/question.action";
+
 interface Props {
   type?: string;
   mongoUserId: string;
@@ -41,18 +42,18 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
   // For editor dark and light mode
   const { mode } = useTheme();
 
-  // // In edit mode data will be shown by default
-  // const parsedQuestionDetails =
-  //   questionDetails && JSON.parse(questionDetails || "");
-  // const groupedTags = parsedQuestionDetails?.tags.map((tag: any) => tag.name);
+  // In edit mode data will be shown by default
+  const parsedQuestionDetails =
+    questionDetails && JSON.parse(questionDetails || "");
+  const groupedTags = parsedQuestionDetails?.tags.map((tag: any) => tag.name);
 
   // Define form.
   const form = useForm<z.infer<typeof QuestionsSchema>>({
     resolver: zodResolver(QuestionsSchema),
     defaultValues: {
-      title: "",
-      explanation: "",
-      tags: [],
+      title: parsedQuestionDetails?.title || "",
+      explanation: parsedQuestionDetails?.content || "",
+      tags: groupedTags || [],
     },
   });
 
@@ -61,18 +62,34 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
     setIsSubmitting(true);
 
     try {
-      await createQuestion({
-        title: values.title,
-        content: values.explanation,
-        tags: values.tags,
-        author: JSON.parse(mongoUserId),
-        path: pathname,
-      });
+      if (type === "edit") {
+        /**
+         * Edit a question
+         */
+        await editQuestion({
+          questionId: parsedQuestionDetails?._id,
+          title: values.title,
+          content: values.explanation,
+          path: pathname,
+        });
+        // navigate to the question detail page
+        router.push(`/question/${parsedQuestionDetails._id}`);
+      } else {
+        /**
+         * Cretate a new Question
+         */
+        await createQuestion({
+          title: values.title,
+          content: values.explanation,
+          tags: values.tags,
+          author: JSON.parse(mongoUserId),
+          path: pathname,
+        });
 
-      router.push("/");
+        // navigate to home page
+        router.push("/");
+      }
     } catch (error) {
-      console.log(error);
-      setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -178,7 +195,7 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
                   }}
                   onBlur={field.onBlur}
                   onEditorChange={(content) => field.onChange(content)}
-                  initialValue={""}
+                  initialValue={parsedQuestionDetails?.content || ""}
                   init={{
                     height: 350,
                     menubar: false,
@@ -282,7 +299,7 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
           {isSubmitting ? (
             <>{type === "edit" ? "Editing..." : "Posting..."}</>
           ) : (
-            <>{type === "edit" ? "Edit Question" : "Ask a Question"}</>
+            <>{type === "edit" ? "Edit Question" : "Ask a Questioin"}</>
           )}
         </Button>
       </form>
