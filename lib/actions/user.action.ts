@@ -382,3 +382,21 @@ export async function deleteAnswer(params: DeleteAnswerParams) {
     revalidatePath(path);
   } catch (error) {}
 }
+
+export async function getHotQuestions(params: GetAllUsersParams) {
+  try {
+    connectToDatabase();
+
+    const hotQuestions = await Question.find({})
+      .sort({
+        views: -1,
+        upvotes: -1,
+      })
+      .limit(5);
+
+    return hotQuestions;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
