@@ -15,10 +15,14 @@ import { revalidatePath } from "next/cache";
 import { error } from "console";
 import { FilterQuery } from "mongoose";
 
-export async function getQuestion(params: GetQuestionsParams) {
+export async function getQuestions(params: GetQuestionsParams) {
   try {
     connectToDatabase();
-    const { searchQuery } = params;
+
+    /**
+     * Search functionality
+     */
+    const { searchQuery, filter } = params;
 
     /**
      * Query
@@ -31,16 +35,45 @@ export async function getQuestion(params: GetQuestionsParams) {
       ];
     }
 
+    /**
+     * Sorting
+     */
+    let sortOptions = {};
+    switch (filter) {
+      case "newest":
+        sortOptions = { createdAt: -1 };
+        break;
+
+      case "frequent":
+        sortOptions = { views: -1 };
+        break;
+
+      case "unanswered":
+        query.answers = { $size: 0 };
+        break;
+
+      default:
+        break;
+    }
+
+    /**
+     * Populating
+     */
     const questions = await Question.find(query)
       .populate({
         path: "tags",
         model: Tag,
       })
-      .populate({ path: "author", model: User })
-      .sort({ createdAt: -1 });
+      .populate({
+        path: "author",
+        model: User,
+      })
+
+      .sort(sortOptions);
+
     return { questions };
   } catch (error) {
-    console.error(error);
+    console.error(`❌ ${error} ❌`);
     throw error;
   }
 }

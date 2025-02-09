@@ -30,11 +30,12 @@ export async function getTopInteractedTags(params: GetTopInteractedTagsParams) {
     throw error;
   }
 }
+
 export async function getAllTags(params: GetAllTagsParams) {
   try {
     connectToDatabase();
 
-    const { searchQuery, page = 1, pageSize = 10 } = params;
+    const { searchQuery, filter, page = 1, pageSize = 10 } = params;
 
     // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
     const skipAmount = (page - 1) * pageSize;
@@ -47,7 +48,35 @@ export async function getAllTags(params: GetAllTagsParams) {
       query.$or = [{ name: { $regex: new RegExp(searchQuery, "i") } }];
     }
 
-    const tags = await Tag.find(query).skip(skipAmount).limit(pageSize);
+    /**
+     * Sorting
+     */
+    let sortOptions = {};
+    switch (filter) {
+      case "popular":
+        sortOptions = { questions: -1 };
+        break;
+
+      case "recent":
+        sortOptions = { createdOn: -1 };
+        break;
+
+      case "name":
+        sortOptions = { name: 1 };
+        break;
+
+      case "old":
+        sortOptions = { createdOn: 1 };
+        break;
+
+      default:
+        break;
+    }
+
+    const tags = await Tag.find(query)
+      .sort(sortOptions)
+      .skip(skipAmount)
+      .limit(pageSize);
 
     return { tags };
   } catch (error) {

@@ -10,7 +10,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import NoResult from "@/components/shared/NoResult";
 import QuestionCard from "@/components/cards/QuestionCard";
-import { getQuestion } from "@/lib/actions/question.action";
+import { getQuestions } from "@/lib/actions/question.action";
 
 export const metadata: Metadata = {
   title: "Home | Dev Overflow",
@@ -18,11 +18,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Home({ searchParams }: SearchParamsProps) {
-  const results = await getQuestion({
+  const results = await getQuestions({
     searchQuery: searchParams.q,
+    filter: searchParams.filter,
   });
-
-  console.log(results.questions);
 
   return (
     <>
