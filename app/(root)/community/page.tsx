@@ -1,15 +1,23 @@
-import UserCard from "@/components/cards/UserCard";
-import Filter from "@/components/shared/Filter";
-import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
 import { UserFilters } from "@/constants/filters";
+import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
+import Filter from "@/components/shared/Filter";
 import { getAllUsers } from "@/lib/actions/user.action";
+import Link from "next/link";
+import UserCard from "@/components/cards/UserCard";
 import { SearchParamsProps } from "@/types";
-import React from "react";
+import { Metadata } from "next";
 
-const Page = async ({ searchParams }: SearchParamsProps) => {
+export const metadata: Metadata = {
+  title: "Community | Dev Overflow",
+};
+
+const Community = async ({ searchParams }: SearchParamsProps) => {
   const result = await getAllUsers({
     searchQuery: searchParams.q,
+    filter: searchParams.filter,
+    page: searchParams.page ? +searchParams.page : 1,
   });
+
   return (
     <>
       <h1 className="h1-bold text-dark100_light900">All Users</h1>
@@ -30,16 +38,18 @@ const Page = async ({ searchParams }: SearchParamsProps) => {
       </div>
 
       <section className="mt-12 flex flex-wrap gap-4">
-        {result.users && result.users.length > 0 ? (
-          result.users.map((user) => (
-            <UserCard key={user._id} user={JSON.parse(JSON.stringify(user))} />
-          ))
+        {result.users.length > 0 ? (
+          result.users.map((user) => <UserCard key={user._id} user={user} />)
         ) : (
-          <p>Oi</p>
+          <div className="paragraph-regular text-dark200_light800 mx-auto max-w-4xl text-center">
+            <p>No users yet.</p>
+            <Link href="/sign-up" className="mt-1 font-bold text-accent-blue">
+              Join to be the first
+            </Link>
+          </div>
         )}
       </section>
     </>
   );
 };
-
-export default Page;
+export default Community;

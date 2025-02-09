@@ -18,7 +18,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Home({ searchParams }: SearchParamsProps) {
-  const results = await getQuestion({});
+  const results = await getQuestion({
+    searchQuery: searchParams.q,
+  });
 
   console.log(results.questions);
 
