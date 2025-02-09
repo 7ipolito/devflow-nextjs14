@@ -30,16 +30,28 @@ export async function getTopInteractedTags(params: GetTopInteractedTagsParams) {
     throw error;
   }
 }
-
 export async function getAllTags(params: GetAllTagsParams) {
   try {
     connectToDatabase();
 
-    const tags = await Tag.find({});
+    const { searchQuery, page = 1, pageSize = 10 } = params;
+
+    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
+    const skipAmount = (page - 1) * pageSize;
+
+    /**
+     * Query
+     */
+    const query: FilterQuery<typeof Tag> = {};
+    if (searchQuery) {
+      query.$or = [{ name: { $regex: new RegExp(searchQuery, "i") } }];
+    }
+
+    const tags = await Tag.find(query).skip(skipAmount).limit(pageSize);
 
     return { tags };
   } catch (error) {
-    console.log(error);
+    console.error(`❌ ${error} ❌`);
     throw error;
   }
 }
