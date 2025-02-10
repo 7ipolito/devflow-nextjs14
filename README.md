@@ -76,4 +76,5 @@ Before you start, ensure you have `node` and `npm` installed on your machine.
 
 ## Conclusion
 This project it were a challenge for me improve my skills mainly relationed to create all parts of the project only in a one place using Next.js
+
 ---
