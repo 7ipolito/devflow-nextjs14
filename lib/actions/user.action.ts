@@ -96,7 +96,11 @@ export async function getAllUsers(params: GetAllUsersParams) {
   try {
     connectToDatabase();
 
-    const { searchQuery, filter } = params;
+    const { searchQuery, filter, page = 1, pageSize = 10 } = params;
+
+    // for Pagination => caluclate the number of posts to skip
+    // based on the pageNumber and pageSize
+    const skipAmount = (page - 1) * pageSize;
 
     /**
      * Query
@@ -130,9 +134,18 @@ export async function getAllUsers(params: GetAllUsersParams) {
         break;
     }
 
-    const users = await User.find(query).sort(sortOption);
+    const users = await User.find(query)
+      .sort(sortOption)
+      .skip(skipAmount)
+      .limit(pageSize);
 
-    return { users };
+    /**
+     * Pagination
+     */
+    const totalUsers = await User.countDocuments(query);
+    const isNext = totalUsers > skipAmount + users.length;
+
+    return { users, isNext };
   } catch (error) {
     console.error(`❌ ${error} ❌`);
     throw error;
@@ -378,7 +391,10 @@ export async function getUserAnswers(params: GetUserStatsParams) {
   try {
     connectToDatabase();
 
-    const { userId, pageSize = 10 } = params;
+    const { userId, page = 1, pageSize = 10 } = params;
+
+    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
+    const skipAmount = (page - 1) * pageSize;
 
     const totalAnswers = await Answer.countDocuments({
       author: userId,
@@ -386,11 +402,17 @@ export async function getUserAnswers(params: GetUserStatsParams) {
 
     const userAnswers = await Answer.find({ author: userId })
       .sort({ upvotes: -1 })
+      .skip(skipAmount)
       .limit(pageSize)
       .populate("question", "_id title")
       .populate("author", "_id clerkId name picture");
 
-    return { totalAnswers, answers: userAnswers };
+    /**
+     * Pagination
+     */
+    const isNextAnswers = totalAnswers > skipAmount + userAnswers.length;
+
+    return { totalAnswers, answers: userAnswers, isNextAnswers };
   } catch (error) {
     console.error(`❌ ${error} ❌`);
     throw error;
