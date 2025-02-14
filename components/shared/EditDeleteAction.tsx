@@ -1,6 +1,7 @@
 "use client";
 
-import { deleteAnswer, deleteQuestion } from "@/lib/actions/user.action";
+import { deleteAnswer } from "@/lib/actions/answer.action";
+import { deleteQuestion } from "@/lib/actions/question.action";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 

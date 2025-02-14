@@ -1,12 +1,10 @@
 "use server";
 
 import User from "@/database/user.model";
+import { FilterQuery } from "mongoose";
 import { connectToDatabase } from "../mongoose";
-import Question from "@/database/question.model";
 import {
   CreateUserParams,
-  DeleteAnswerParams,
-  DeleteQuestionParams,
   DeleteUserParams,
   GetAllUsersParams,
   GetSavedQuestionsParams,
@@ -16,36 +14,51 @@ import {
   UpdateUserParams,
 } from "./shared.types";
 import { revalidatePath } from "next/cache";
-import { FilterQuery } from "mongoose";
+import Question from "@/database/question.model";
 import Tag from "@/database/tag.model";
 import Answer from "@/database/answer.model";
 import { assignBadges } from "../utils";
 import { BADGE_CRITERIA } from "@/constants";
-import Interaction from "@/database/interaction.model";
 
-export async function getUserByID(params: any) {
+export async function getUserByID(params: GetUserByIdParams) {
   try {
     connectToDatabase();
+
     const { userId } = params;
 
     const user = await User.findOne({ clerkId: userId });
 
     return user;
   } catch (error) {
-    console.log(error);
+    console.error(`❌ ${error} ❌`);
+    throw error;
   }
 }
 
 export async function createUser(userData: CreateUserParams) {
   try {
     connectToDatabase();
-    const newUser = await User.create(userData);
 
-    await User.findByIdAndUpdate(newUser._id, { $inc: { reputation: 50 } });
+    const newUser = await User.create(userData);
 
     return newUser;
   } catch (error) {
-    console.log(error);
+    console.error(`❌ ${error} ❌`);
+    throw error;
+  }
+}
+
+export async function updateUser(params: UpdateUserParams) {
+  try {
+    connectToDatabase();
+
+    const { clerkId, updateData, path } = params;
+
+    await User.findOneAndUpdate({ clerkId }, updateData, { new: true });
+
+    revalidatePath(path);
+  } catch (error) {
+    console.error(`❌ ${error} ❌`);
     throw error;
   }
 }
@@ -53,41 +66,39 @@ export async function createUser(userData: CreateUserParams) {
 export async function deleteUser(params: DeleteUserParams) {
   try {
     connectToDatabase();
+
     const { clerkId } = params;
     const user = await User.findOneAndDelete({ clerkId });
+
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("❌🔍 User not found 🔍❌");
     }
-    // Delete user from database
-    // and questions, answers, and comments, etc.
 
-    // get user questions ids
-    // const userQuestionsIds = await Question.find({ author: user._id }).distinct(
-    //   "_id",
-    // );
+    /**
+     *  Delete user from database
+     *  It means questions, answers, commnets, etc
+     *
+     */
+    // get user question ids
 
+    // ?  const userQuestionIds = await Question.find({
+    // ?    author: user._id
+    // ?  }).distinct('_id');
+
+    // ⬆️ distinct | create a distinct query, meaning return
+    // distinct values of the given field that mathces this filter
+
+    // delete user questions
     await Question.deleteMany({ author: user._id });
 
-    // TODO: delete user answers, comments, etc.
-    const deleteUser = await User.findByIdAndDelete(user._id);
-    return deleteUser;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-}
+    // TODO: delete user answers, comments, etc
 
-export async function updateUser(updatedData: UpdateUserParams) {
-  try {
-    connectToDatabase();
-    const { clerkId, path, updateData } = updatedData;
-    await User.findOneAndUpdate({ clerkId }, updateData, {
-      new: true,
-    });
+    // delete user
+    const deletedUser = await User.findByIdAndDelete(user._id);
 
-    revalidatePath(path);
+    return deletedUser;
   } catch (error) {
-    console.log(error);
+    console.error(`❌ ${error} ❌`);
     throw error;
   }
 }
@@ -193,7 +204,10 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
   try {
     connectToDatabase();
 
-    const { clerkId, searchQuery, filter } = params;
+    const { clerkId, searchQuery, filter, page = 1, pageSize = 20 } = params;
+
+    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
+    const skipAmount = (page - 1) * pageSize;
 
     const query: FilterQuery<typeof Question> = searchQuery
       ? { title: { $regex: new RegExp(searchQuery, "i") } }
@@ -231,6 +245,8 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
       match: query,
       options: {
         sort: sortOption,
+        skip: skipAmount,
+        limit: pageSize + 1,
       },
       populate: [
         { path: "tags", model: Tag, select: "_id name" },
@@ -238,18 +254,24 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
       ],
     });
 
+    /**
+     * Pagination
+     */
+    const isNext = user.saved.length > pageSize;
+
     if (!user) {
       throw new Error("❌🔍 User not found 🔍❌");
     }
 
     const savedQuestions = user.saved;
 
-    return { questions: savedQuestions };
+    return { questions: savedQuestions, isNext };
   } catch (error) {
     console.error(`❌ ${error} ❌`);
     throw error;
   }
 }
+
 export async function getUserInfo(params: GetUserByIdParams) {
   try {
     connectToDatabase();
@@ -315,7 +337,7 @@ export async function getUserInfo(params: GetUserByIdParams) {
     /**
      * Badge system
      */
-    // Criteria
+
     const criteria: { type: keyof typeof BADGE_CRITERIA; count: number }[] = [
       {
         type: "QUESTION_COUNT",
@@ -415,68 +437,6 @@ export async function getUserAnswers(params: GetUserStatsParams) {
     return { totalAnswers, answers: userAnswers, isNextAnswers };
   } catch (error) {
     console.error(`❌ ${error} ❌`);
-    throw error;
-  }
-}
-
-export async function deleteQuestion(params: DeleteQuestionParams) {
-  try {
-    const { questionId, path } = params;
-    await Question.deleteOne({ _id: questionId });
-
-    await Answer.deleteMany({ question: questionId });
-
-    await Interaction.deleteMany({ question: questionId });
-
-    await Tag.updateMany(
-      { questions: questionId },
-      { $pull: { questions: questionId } }
-    );
-
-    revalidatePath(path);
-  } catch (error) {}
-}
-
-export async function deleteAnswer(params: DeleteAnswerParams) {
-  try {
-    const { answerId, path } = params;
-    const answer = await Answer.findById(answerId);
-
-    if (!answer) {
-      throw new Error("Answer Not found");
-    }
-
-    await answer.deleteOne({ _id: answerId });
-
-    await Question.updateMany(
-      { _id: answer.question },
-      {
-        $pull: {
-          answers: answerId,
-        },
-      }
-    );
-
-    await Interaction.deleteMany({ answer: answerId });
-
-    revalidatePath(path);
-  } catch (error) {}
-}
-
-export async function getHotQuestions(params: GetAllUsersParams) {
-  try {
-    connectToDatabase();
-
-    const hotQuestions = await Question.find({})
-      .sort({
-        views: -1,
-        upvotes: -1,
-      })
-      .limit(5);
-
-    return hotQuestions;
-  } catch (error) {
-    console.log(error);
     throw error;
   }
 }

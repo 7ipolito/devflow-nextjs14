@@ -5,6 +5,7 @@ import Tag from "@/database/tag.model";
 import { connectToDatabase } from "../mongoose";
 import {
   CreateQuestionParams,
+  DeleteQuestionParams,
   EditQuestionParams,
   GetQuestionByIdParams,
   GetQuestionsParams,
@@ -14,6 +15,8 @@ import User from "@/database/user.model";
 import { revalidatePath } from "next/cache";
 import { error } from "console";
 import { FilterQuery } from "mongoose";
+import Interaction from "@/database/interaction.model";
+import Answer from "@/database/answer.model";
 
 export async function getQuestions(params: GetQuestionsParams) {
   try {
@@ -118,14 +121,16 @@ export async function createQuestion(params: CreateQuestionParams) {
       $push: { tags: { $each: tagDocuments } },
     });
 
+    await User.findByIdAndUpdate(author, { $inc: { reputation: 5 } });
+
     revalidatePath(path);
 
-    // await Interaction.create({
-    //   user: author,
-    //   action: "ask_question",
-    //   question: question._id,
-    //   tags: tagDocuments,
-    // });
+    await Interaction.create({
+      user: author,
+      action: "ask_question",
+      question: question._id,
+      tags: tagDocuments,
+    });
   } catch (error) {}
 }
 
@@ -180,6 +185,18 @@ export async function upvoteQuestion(params: QuestionVoteParams) {
       throw new Error("Question not found");
     }
 
+    // Increment author's reputation by +1/-1 for
+    // upvoting/revoking an upvote to the question
+    await User.findByIdAndUpdate(userId, {
+      $inc: { reputation: hasUpvoted ? -1 : 1 },
+    });
+
+    // Increment author's reputation by +10/-10 for
+    // recieving an upvote/downvote to the question
+    await User.findByIdAndUpdate(question.author, {
+      $inc: { reputation: hasUpvoted ? -10 : 10 },
+    });
+
     revalidatePath(path);
     // const { page = 1, pageSize = 20, filter, searchQuery } = params;
 
@@ -218,12 +235,16 @@ export async function downvoteQuestion(params: QuestionVoteParams) {
       throw new Error("Question not found");
     }
 
+    // Decrement author's reputation
+    await User.findByIdAndUpdate(userId, {
+      $inc: { reputation: hasDownvoted ? -2 : 2 },
+    });
+
+    await User.findByIdAndUpdate(question.author, {
+      $inc: { reputation: hasDownvoted ? -10 : 10 },
+    });
+
     revalidatePath(path);
-    // const { page = 1, pageSize = 20, filter, searchQuery } = params;
-
-    const users = await User.find({}).sort({ createdAt: -1 });
-
-    return { users };
   } catch (error) {
     console.log(error);
     throw error;
@@ -262,6 +283,34 @@ export async function getHotQuestions() {
       .limit(5);
 
     return hotQuestions;
+  } catch (error) {
+    console.error(`❌ ${error} ❌`);
+    throw error;
+  }
+}
+
+export async function deleteQuestion(params: DeleteQuestionParams) {
+  try {
+    connectToDatabase();
+
+    const { questionId, path } = params;
+
+    // Delete the question
+    await Question.deleteOne({ _id: questionId });
+
+    // Delete all answers relative to the question
+    await Answer.deleteMany({ question: questionId });
+
+    // Delete all interaction relative to the question
+    await Interaction.deleteMany({ question: questionId });
+
+    // Update all tags that include the question
+    await Tag.updateMany(
+      { questions: questionId },
+      { $pull: { questions: questionId } }
+    );
+
+    revalidatePath(path);
   } catch (error) {
     console.error(`❌ ${error} ❌`);
     throw error;
