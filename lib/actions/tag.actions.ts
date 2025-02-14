@@ -37,20 +37,13 @@ export async function getAllTags(params: GetAllTagsParams) {
 
     const { searchQuery, filter, page = 1, pageSize = 10 } = params;
 
-    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
     const skipAmount = (page - 1) * pageSize;
 
-    /**
-     * Query
-     */
     const query: FilterQuery<typeof Tag> = {};
     if (searchQuery) {
       query.$or = [{ name: { $regex: new RegExp(searchQuery, "i") } }];
     }
 
-    /**
-     * Sorting
-     */
     let sortOptions = {};
     switch (filter) {
       case "popular":
@@ -93,7 +86,6 @@ export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
     connectToDatabase();
     const { tagId, page = 1, pageSize = 10, searchQuery } = params;
 
-    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
     const skipAmount = (page - 1) * pageSize;
 
     const tagFilter: FilterQuery<ITag> = { _id: tagId };
@@ -107,7 +99,7 @@ export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
       options: {
         sort: { createdAt: -1 },
         skip: skipAmount,
-        limit: pageSize + 1, // +1 to check if there is next page
+        limit: pageSize + 1,
       },
       populate: [
         { path: "tags", model: Tag, select: "_id name" },

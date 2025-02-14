@@ -74,26 +74,8 @@ export async function deleteUser(params: DeleteUserParams) {
       throw new Error("❌🔍 User not found 🔍❌");
     }
 
-    /**
-     *  Delete user from database
-     *  It means questions, answers, commnets, etc
-     *
-     */
-    // get user question ids
-
-    // ?  const userQuestionIds = await Question.find({
-    // ?    author: user._id
-    // ?  }).distinct('_id');
-
-    // ⬆️ distinct | create a distinct query, meaning return
-    // distinct values of the given field that mathces this filter
-
-    // delete user questions
     await Question.deleteMany({ author: user._id });
 
-    // TODO: delete user answers, comments, etc
-
-    // delete user
     const deletedUser = await User.findByIdAndDelete(user._id);
 
     return deletedUser;
@@ -109,13 +91,8 @@ export async function getAllUsers(params: GetAllUsersParams) {
 
     const { searchQuery, filter, page = 1, pageSize = 10 } = params;
 
-    // for Pagination => caluclate the number of posts to skip
-    // based on the pageNumber and pageSize
     const skipAmount = (page - 1) * pageSize;
 
-    /**
-     * Query
-     */
     const query: FilterQuery<typeof User> = {};
     if (searchQuery) {
       query.$or = [
@@ -124,9 +101,6 @@ export async function getAllUsers(params: GetAllUsersParams) {
       ];
     }
 
-    /**
-     * Filter
-     */
     let sortOption = {};
     switch (filter) {
       case "new_users":
@@ -150,9 +124,6 @@ export async function getAllUsers(params: GetAllUsersParams) {
       .skip(skipAmount)
       .limit(pageSize);
 
-    /**
-     * Pagination
-     */
     const totalUsers = await User.countDocuments(query);
     const isNext = totalUsers > skipAmount + users.length;
 
@@ -178,14 +149,12 @@ export async function toggleSaveQuestion(params: ToggleSaveQuestionParams) {
     const isQuestionSaved = user.saved.includes(questionId);
 
     if (isQuestionSaved) {
-      // remove question from saved
       await User.findByIdAndUpdate(
         userId,
         { $pull: { saved: questionId } },
         { new: true }
       );
     } else {
-      // add question to saved
       await User.findByIdAndUpdate(
         userId,
         { $addToSet: { saved: questionId } },
@@ -206,16 +175,12 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
 
     const { clerkId, searchQuery, filter, page = 1, pageSize = 20 } = params;
 
-    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
     const skipAmount = (page - 1) * pageSize;
 
     const query: FilterQuery<typeof Question> = searchQuery
       ? { title: { $regex: new RegExp(searchQuery, "i") } }
       : {};
 
-    /**
-     * Filter
-     */
     let sortOption = {};
     switch (filter) {
       case "most_recent":
@@ -254,9 +219,6 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
       ],
     });
 
-    /**
-     * Pagination
-     */
     const isNext = user.saved.length > pageSize;
 
     if (!user) {
@@ -291,7 +253,6 @@ export async function getUserInfo(params: GetUserByIdParams) {
       author: user._id,
     });
 
-    // Total upvotes
     const [questionUpvotes] = await Question.aggregate([
       { $match: { author: user._id } },
       {
@@ -323,7 +284,6 @@ export async function getUserInfo(params: GetUserByIdParams) {
       },
     ]);
 
-    // Views
     const [questionViews] = await Question.aggregate([
       { $match: { author: user._id } },
       {
@@ -333,10 +293,6 @@ export async function getUserInfo(params: GetUserByIdParams) {
         },
       },
     ]);
-
-    /**
-     * Badge system
-     */
 
     const criteria: { type: keyof typeof BADGE_CRITERIA; count: number }[] = [
       {
@@ -361,7 +317,6 @@ export async function getUserInfo(params: GetUserByIdParams) {
       },
     ];
 
-    // Badge counts
     const badgeCounts = assignBadges({ criteria });
 
     return {
@@ -383,7 +338,6 @@ export async function getUserQuestion(params: GetUserStatsParams) {
 
     const { userId, page = 1, pageSize = 10 } = params;
 
-    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
     const skipAmount = (page - 1) * pageSize;
 
     const totalQuestions = await Question.countDocuments({
@@ -397,9 +351,6 @@ export async function getUserQuestion(params: GetUserStatsParams) {
       .populate("tags", "_id name")
       .populate("author", "_id clerkId name picture");
 
-    /**
-     * Pagination
-     */
     const isNextQuestions = totalQuestions > skipAmount + userQuestions.length;
 
     return { totalQuestions, questions: userQuestions, isNextQuestions };
@@ -415,7 +366,6 @@ export async function getUserAnswers(params: GetUserStatsParams) {
 
     const { userId, page = 1, pageSize = 10 } = params;
 
-    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
     const skipAmount = (page - 1) * pageSize;
 
     const totalAnswers = await Answer.countDocuments({
@@ -429,9 +379,6 @@ export async function getUserAnswers(params: GetUserStatsParams) {
       .populate("question", "_id title")
       .populate("author", "_id clerkId name picture");
 
-    /**
-     * Pagination
-     */
     const isNextAnswers = totalAnswers > skipAmount + userAnswers.length;
 
     return { totalAnswers, answers: userAnswers, isNextAnswers };

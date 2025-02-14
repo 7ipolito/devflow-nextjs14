@@ -44,7 +44,6 @@ const Profile = ({ clerkId, user }: Props) => {
     },
   });
 
-  // Submit Form Handler.
   async function onSubmit(values: z.infer<typeof ProfileSchema>) {
     setIsSubmitting(true);
 
@@ -75,7 +74,6 @@ const Profile = ({ clerkId, user }: Props) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="mt-9 flex w-full flex-col gap-9"
       >
-        {/* Name */}
         <FormField
           control={form.control}
           name="name"
@@ -96,7 +94,6 @@ const Profile = ({ clerkId, user }: Props) => {
           )}
         />
 
-        {/* Username */}
         <FormField
           control={form.control}
           name="username"
@@ -117,7 +114,6 @@ const Profile = ({ clerkId, user }: Props) => {
           )}
         />
 
-        {/* Portfolio website */}
         <FormField
           control={form.control}
           name="portfolioWebsite"
@@ -139,7 +135,6 @@ const Profile = ({ clerkId, user }: Props) => {
           )}
         />
 
-        {/* Location */}
         <FormField
           control={form.control}
           name="location"
@@ -160,7 +155,6 @@ const Profile = ({ clerkId, user }: Props) => {
           )}
         />
 
-        {/* Bio */}
         <FormField
           control={form.control}
           name="bio"

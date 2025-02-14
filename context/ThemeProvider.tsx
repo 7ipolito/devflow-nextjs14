@@ -13,12 +13,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState("");
 
   const handleThemeChange = () => {
-    // localStorage.theme in components/shared/navbar/Theme.tsx
-
     if (
       localStorage.theme === "dark" ||
       (!("theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark").matches) // <-- check if the user prefers dark mode
+        window.matchMedia("(prefers-color-scheme: dark").matches)
     ) {
       setMode("dark");
       document.documentElement.classList.add("dark");

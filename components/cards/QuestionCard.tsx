@@ -40,7 +40,6 @@ const QuestionCard = ({
   return (
     <div className="card-wrapper rounded-[10px] p-9 sm:px-11">
       <div className="flex flex-col-reverse items-start justify-between gap-5 sm:flex-row">
-        {/* Date(on mobile) + Title */}
         <div>
           <span className="subtle-regular text-dark400_light700 line-clamp-1 flex sm:hidden">
             {getTimestamp(createdAt)}
@@ -59,14 +58,12 @@ const QuestionCard = ({
           )}
         </SignedIn>
       </div>
-      {/* Tags */}
       <div className="mt-3.5 flex flex-wrap gap-2">
         {tags.map((tag) => {
           return <RenderTag key={tag._id} _id={tag._id} name={tag.name} />;
         })}
       </div>
       <div className="flex-between mt-6 w-full flex-wrap gap-3">
-        {/* Author */}
         <Metric
           imgUrl={author.picture}
           alt="user"
@@ -84,7 +81,6 @@ const QuestionCard = ({
           title="Votes"
           textStyle="small-medium text-dark400_light800"
         />
-        {/* Message */}
         <Metric
           imgUrl="/assets/icons/message.svg"
           alt="message"
@@ -92,7 +88,6 @@ const QuestionCard = ({
           title="Answers"
           textStyle="small-medium text-dark400_light800"
         />
-        {/* Views */}
         <Metric
           imgUrl="/assets/icons/eye.svg"
           alt="eye"

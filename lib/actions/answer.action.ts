@@ -21,12 +21,10 @@ export async function createAnswer(params: CreateAnswerParams) {
 
     const newAnswer = await Answer.create({ content, author, question });
 
-    // Add the answer to the question's answers array
     const questionObject = await Question.findByIdAndUpdate(question, {
       $push: { answers: newAnswer._id },
     });
 
-    // Increment user reputation
     await Interaction.create({
       user: author,
       action: "answer",
@@ -49,12 +47,8 @@ export async function getAnswers(params: GetAnswersParams) {
     connectToDatabase();
     const { questionId, sortBy, page = 1, pageSize = 10 } = params;
 
-    // for Pagination => caluclate the number of posts to skip based on the pageNumber and pageSize
     const skipAmount = (page - 1) * pageSize;
 
-    /**
-     * Sorting
-     */
     let sortOptions = {};
     switch (sortBy) {
       case "higestUpvotes":
@@ -83,9 +77,6 @@ export async function getAnswers(params: GetAnswersParams) {
       .limit(pageSize)
       .sort(sortOptions);
 
-    /**
-     * Pagination
-     */
     const totalAnswers = await Answer.countDocuments({
       question: questionId,
     });
@@ -190,23 +181,19 @@ export async function deleteAnswer(params: DeleteAnswerParams) {
 
     const { answerId, path } = params;
 
-    // Find the answer
     const answer = await Answer.findById(answerId);
 
     if (!answer) {
       throw new Error(`❌ Answer not found ❌`);
     }
 
-    // Delete the answer
     await answer.deleteOne({ _id: answerId });
 
-    // Update all question that include the answer
     await Question.updateMany(
       { _id: answer.question },
       { $pull: { answers: answerId } }
     );
 
-    // Delete all interaction relative to the answer
     await Interaction.deleteMany({ answer: answerId });
 
     revalidatePath(path);

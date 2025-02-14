@@ -64,7 +64,6 @@ const Page = async ({ params }: any) => {
           textStyle="small-medium text-dark400_light800"
         />
 
-        {/* Message */}
         <Metric
           imgUrl="/assets/icons/message.svg"
           alt="message"
@@ -73,7 +72,6 @@ const Page = async ({ params }: any) => {
           textStyle="small-medium text-dark400_light800"
         />
 
-        {/* Views */}
         <Metric
           imgUrl="/assets/icons/eye.svg"
           alt="eye"

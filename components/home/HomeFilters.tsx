@@ -12,13 +12,6 @@ const HomeFilters = () => {
 
   const [active, setActive] = useState("");
 
-  /**
-   * Handles the click event for filter buttons.
-   * Toggles the active state of the clicked filter,
-   * updates the URL accordingly, and triggers a router navigation.
-   *
-   * @param {string} filter - The value of the clicked filter.
-   */
   const handleTypeClick = (filter: string) => {
     if (active === filter) {
       setActive("");
