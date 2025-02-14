@@ -1,16 +1,16 @@
+import QuestionCard from "@/components/cards/QuestionCard";
 import HomeFilters from "@/components/home/HomeFilters";
 import Filter from "@/components/shared/Filter";
+import NoResult from "@/components/shared/NoResult";
+import Pagination from "@/components/shared/Pagination";
 import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
 import { Button } from "@/components/ui/button";
 import { HomePageFilters } from "@/constants/filters";
-
+import { getQuestions } from "@/lib/actions/question.action";
 import { SearchParamsProps } from "@/types";
 import Link from "next/link";
 
 import type { Metadata } from "next";
-import NoResult from "@/components/shared/NoResult";
-import QuestionCard from "@/components/cards/QuestionCard";
-import { getQuestions } from "@/lib/actions/question.action";
 
 export const metadata: Metadata = {
   title: "Home | Dev Overflow",
@@ -18,9 +18,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Home({ searchParams }: SearchParamsProps) {
-  const results = await getQuestions({
+  let result;
+
+  // eslint-disable-next-line prefer-const
+  result = await getQuestions({
     searchQuery: searchParams.q,
     filter: searchParams.filter,
+    page: searchParams.page ? +searchParams.page : 1,
   });
 
   return (
@@ -52,21 +56,25 @@ export default async function Home({ searchParams }: SearchParamsProps) {
       </div>
 
       <HomeFilters />
+
+      {/* Questions */}
       <div className="mt-10 flex w-full flex-col gap-6">
-        {results.questions.length > 0 ? (
-          results.questions.map((question) => (
-            <QuestionCard
-              key={question._id}
-              _id={question._id}
-              title={question.title}
-              tags={question.tags}
-              author={question.author}
-              upvotes={question.upvotes}
-              answers={question.answers}
-              views={question.views}
-              createdAt={question.createdAt}
-            />
-          ))
+        {result.questions.length > 0 ? (
+          result.questions.map((question) => {
+            return (
+              <QuestionCard
+                key={question._id}
+                _id={question._id}
+                title={question.title}
+                tags={question.tags}
+                author={question.author}
+                upvotes={question.upvotes}
+                answers={question.answers}
+                views={question.views}
+                createdAt={question.createdAt}
+              />
+            );
+          })
         ) : (
           <NoResult
             title="There's no question to show"
@@ -77,6 +85,14 @@ export default async function Home({ searchParams }: SearchParamsProps) {
             linkTitle="Ask Question"
           />
         )}
+      </div>
+
+      {/* Pagination */}
+      <div className="mt-10">
+        <Pagination
+          pageNumber={searchParams?.page ? +searchParams.page : 1}
+          isNext={result.isNext}
+        />
       </div>
     </>
   );
