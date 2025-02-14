@@ -1,5 +1,5 @@
 # DevFlow
-<img src="https://github.com/user-attachments/assets/c3b8fe9b-2f66-4c5e-8358-785a606daa1b" width="200px"/>
+<img src="https://camo.githubusercontent.com/727740b7ca6cfe1fac1a6c4f5c4f4a8e518498ecc83532e30228a02d9faf1cd1/68747470733a2f2f692e6962622e636f2f783746436852502f5468756d626e61696c2e6a7067"/>
 
 Welcome to stack_overflow_nextjs14 repository 
 
