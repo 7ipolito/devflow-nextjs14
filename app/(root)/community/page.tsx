@@ -51,7 +51,6 @@ const Community = async ({ searchParams }: SearchParamsProps) => {
         )}
       </section>
 
-      {/* Pagination */}
       <div className="mt-10">
         <Pagination
           pageNumber={searchParams?.page ? +searchParams.page : 1}

@@ -31,7 +31,6 @@ const UserCard = async ({ user }: Props) => {
           />
         </Link>
 
-        {/* User info */}
         <Link href={`/profile/${user.clerkId}`}>
           <div className="mt-4 text-center">
             <h3 className="h3-bold text-dark200_light900 line-clamp-1">
@@ -43,7 +42,6 @@ const UserCard = async ({ user }: Props) => {
           </div>
         </Link>
 
-        {/* Tags */}
         <div className="mt-5">
           {interactedTags.length > 0 ? (
             <div className="flex items-center gap-2">

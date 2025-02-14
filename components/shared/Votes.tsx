@@ -64,11 +64,6 @@ const Votes = ({
           path: pathname,
         });
       }
-
-      // return toast({
-      //   title: `Upvote ${!hasUpvoted ? "Successful" : "Removed"}`,
-      //   variant: !hasUpvoted ? "default" : "destructive",
-      // });
     }
 
     if (action === "downvote") {
@@ -89,11 +84,6 @@ const Votes = ({
           path: pathname,
         });
       }
-
-      // return toast({
-      //   title: `Downvote ${!hasDownvoted ? "Successful" : "Removed"}`,
-      //   variant: !hasDownvoted ? "default" : "destructive",
-      // });
     }
   };
 

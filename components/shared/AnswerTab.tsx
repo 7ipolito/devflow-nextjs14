@@ -27,7 +27,6 @@ const AnswersTab = async ({ searchParams, userId, clerkId }: Props) => {
         />
       ))}
 
-      {/* Pagination */}
       <Pagination
         pageNumber={searchParams?.page ? +searchParams.page : 1}
         isNext={result.isNextAnswers}

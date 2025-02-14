@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Editor } from "@tinymce/tinymce-react";
 import { useTheme } from "@/context/ThemeProvider";
 import { Button } from "../ui/button";
+import Image from "next/image";
 import { createAnswer } from "@/lib/actions/answer.action";
 import { usePathname } from "next/navigation";
 
@@ -44,7 +45,6 @@ const Answer = ({ question, questionId, authorId }: Props) => {
     setIsSubmitting(true);
 
     try {
-      // Create question
       await createAnswer({
         content: values.answer,
         author: JSON.parse(authorId),
@@ -52,7 +52,6 @@ const Answer = ({ question, questionId, authorId }: Props) => {
         path: pathname,
       });
 
-      // Reset form
       form.reset();
       if (editorRef.current) {
         const editor = editorRef.current as any;
@@ -66,12 +65,29 @@ const Answer = ({ question, questionId, authorId }: Props) => {
     }
   };
 
+  const generateAIAnswer = async () => {};
+
   return (
     <div className="mt-8">
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center sm:gap-2">
         <h4 className="paragraph-semibold text-dark400_light800">
           Write your answer here
         </h4>
+
+        <Button
+          className="btn light-border-2 gap-1.5 rounded-md px-4 py-2.5 text-primary-500 shadow-none"
+          disabled
+          onClick={generateAIAnswer}
+        >
+          <Image
+            src="/assets/icons/stars.svg"
+            alt="star"
+            width={12}
+            height={12}
+            className="object-contain"
+          />
+          Generate AI Answer
+        </Button>
       </div>
       <Form {...form}>
         <form
@@ -83,7 +99,6 @@ const Answer = ({ question, questionId, authorId }: Props) => {
             name="answer"
             render={({ field }) => (
               <FormItem className="flex w-full flex-col gap-3">
-                {/* Text Editor from https://www.tiny.cloud/ */}
                 <FormControl className="mt-3.5">
                   <Editor
                     apiKey={process.env.NEXT_PUBLIC_TINY_EDITOR_API_KEY}

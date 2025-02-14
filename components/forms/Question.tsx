@@ -63,21 +63,14 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
 
     try {
       if (type === "edit") {
-        /**
-         * Edit a question
-         */
         await editQuestion({
           questionId: parsedQuestionDetails?._id,
           title: values.title,
           content: values.explanation,
           path: pathname,
         });
-        // navigate to the question detail page
         router.push(`/question/${parsedQuestionDetails._id}`);
       } else {
-        /**
-         * Cretate a new Question
-         */
         await createQuestion({
           title: values.title,
           content: values.explanation,
@@ -86,7 +79,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
           path: pathname,
         });
 
-        // navigate to home page
         router.push("/");
       }
     } catch (error) {
@@ -95,14 +87,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
     }
   }
 
-  /**
-   * Handles 'Enter' key events for adding tags to a form field.
-   * Triggers tag addition, validation, or form submission.
-   *
-   * @param {React.KeyboardEvent<HTMLInputElement>} e - The keyboard event.
-   * @param {any} field - The field to which this function is associated.
-   *
-   */
   const handleInputKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     field: any
@@ -111,10 +95,8 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
       e.preventDefault();
 
       const tagInput = e.target as HTMLInputElement;
-      const tagValue = tagInput.value.trim(); // Remove the leading and trailing white space
-
+      const tagValue = tagInput.value.trim();
       if (tagValue !== "") {
-        // Error in tag input when the value is > 15 characters
         if (tagValue.length > 15) {
           return form.setError("tags", {
             type: "required",
@@ -122,7 +104,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
           });
         }
 
-        // Check if the tag exist already within the fields
         if (!field.value.includes(tagValue as never)) {
           form.setValue("tags", [...field.value, tagValue]);
           tagInput.value = "";
@@ -134,10 +115,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
     }
   };
 
-  /**
-   * Function to remove tags from tag list
-   *
-   */
   const handleTagRemove = (tag: string, field: any) => {
     const newTags = field.value.filter((t: string) => t !== tag);
 
@@ -150,7 +127,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex w-full flex-col gap-10"
       >
-        {/* Title */}
         <FormField
           control={form.control}
           name="title"
@@ -174,7 +150,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
           )}
         />
 
-        {/* Explanation */}
         <FormField
           control={form.control}
           name="explanation"
@@ -185,7 +160,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
                 <span className="text-primary-500">*</span>
               </FormLabel>
 
-              {/* Text Editor from https://www.tiny.cloud/ */}
               <FormControl className="mt-3.5">
                 <Editor
                   apiKey={process.env.NEXT_PUBLIC_TINY_EDITOR_API_KEY}
@@ -247,7 +221,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
                 Tags<span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl className="mt-3.5">
-                {/* Fragment because the FormControl can contain only one element */}
                 <>
                   <Input
                     disabled={type === "edit"}
@@ -256,7 +229,6 @@ const Question = ({ type, mongoUserId, questionDetails }: Props) => {
                     onKeyDown={(e) => handleInputKeyDown(e, field)}
                   />
 
-                  {/* Tags added by the user */}
                   {field.value.length > 0 && (
                     <div className="flex-start mt-2.5 gap-2.5">
                       {field.value.map((tag: any) => {

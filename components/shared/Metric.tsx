@@ -44,9 +44,6 @@ const Metric = ({
     </>
   );
 
-  /**
-   * Author is clickable
-   */
   if (href) {
     return (
       <Link href={href} className="flex-center gap-1">

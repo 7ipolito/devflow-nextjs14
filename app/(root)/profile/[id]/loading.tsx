@@ -38,7 +38,6 @@ const ProfilePage = async ({ params, searchParams }: URLProps) => {
             </p>
 
             <div className="mt-5 flex flex-wrap items-center justify-start gap-5">
-              {/* Location */}
               {userInfo.user.location && (
                 <ProfileLink
                   imgUrl="/assets/icons/location.svg"
@@ -46,7 +45,6 @@ const ProfilePage = async ({ params, searchParams }: URLProps) => {
                 />
               )}
 
-              {/* Portfolio Website */}
               {userInfo.user.portfolioWebsite && (
                 <ProfileLink
                   imgUrl="/assets/icons/link.svg"
@@ -55,14 +53,12 @@ const ProfilePage = async ({ params, searchParams }: URLProps) => {
                 />
               )}
 
-              {/* Joined Date */}
               <ProfileLink
                 imgUrl="/assets/icons/calendar.svg"
                 title={getJoinedDate(userInfo.user.joinedAt)}
               />
             </div>
 
-            {/* Bio */}
             {userInfo.user.bio && (
               <p className="paragraph-regular text-dark400_light800 mt-8">
                 {userInfo.user.bio}
@@ -102,7 +98,6 @@ const ProfilePage = async ({ params, searchParams }: URLProps) => {
             </TabsTrigger>
           </TabsList>
 
-          {/* TOP POSTS */}
           <TabsContent value="top-posts" className="flex w-full flex-col gap-6">
             <QuestionTab
               searchParams={searchParams}
@@ -110,7 +105,6 @@ const ProfilePage = async ({ params, searchParams }: URLProps) => {
               clerkId={clerkId}
             />
           </TabsContent>
-          {/* ANSWERS */}
           <TabsContent value="answers" className="flex w-full flex-col gap-6">
             <AnswersTab
               searchParams={searchParams}
